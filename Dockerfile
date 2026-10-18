@@ -1,6 +1,7 @@
 # ForgeAI MERN app — build the Vite client, run the Express server
 FROM node:20-alpine AS client-build
 WORKDIR /app
+COPY package.json ./
 COPY client/package.json ./client/
 RUN npm install --prefix client
 COPY client ./client
@@ -13,5 +14,5 @@ COPY package.json ./
 RUN npm install --omit=dev
 COPY server ./server
 COPY --from=client-build /app/client/dist ./client/dist
-EXPOSE 4000
+EXPOSE 10000
 CMD ["node", "server/index.js"]

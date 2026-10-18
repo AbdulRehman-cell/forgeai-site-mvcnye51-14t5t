@@ -1,5 +1,17 @@
 node_modules
+npm-debug.log
 client/node_modules
 client/dist
+client/build
 .git
+.gitignore
 .env
+.env.local
+.env.production
+.dockerignore
+Dockerfile
+docker-compose.yml
+render.yaml
+README.md
+DEPLOY.md
+.github

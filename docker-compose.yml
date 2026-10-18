@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: forgeai_app
+    restart: unless-stopped
+    ports:
+      - "10000:10000"
+    environment:
+      - NODE_ENV=production
+      - PORT=10000
+      - MONGODB_URI=mongodb://mongo:27017/forgeai_db
+      - JWT_SECRET=local_development_jwt_secret_key_change_in_prod
+      - CLIENT_ORIGIN=http://localhost:10000
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:7.0.8-jammy
+    container_name: forgeai_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=forgeai_db
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:

@@ -1,5 +1,10 @@
 node_modules
+npm-debug.log
 client/node_modules
 client/dist
 .git
+.github
 .env
+*.md
+docker-compose.yml
+.gitignore

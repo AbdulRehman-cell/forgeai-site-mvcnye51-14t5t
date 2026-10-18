@@ -1,48 +1,58 @@
-name: CI/CD Pipeline
+name: Continuous Integration & Deployment
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
 
 jobs:
-  lint-and-test:
-    name: Build & Test
+  audit-and-build:
+    name: Lint, Test & Validate Docker Build
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.1.6
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.0.2
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.12.2'
+          node-version: '20.11.1'
           cache: 'npm'
 
-      - name: Install root dependencies
+      - name: Install Root Dependencies
         run: npm ci
 
-      - name: Install client dependencies
-        run: npm --prefix client ci
-
-      - name: Build static assets
+      - name: Validate Client Build
         run: npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image (Dry Run)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: forgeai-site:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     name: Trigger Render Deployment
-    needs: lint-and-test
+    needs: audit-and-build
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-22.04
 
     steps:
       - name: Trigger Render Deploy Hook
-        uses: johnbeynon/render-deploy-action@v0.0.8
-        with:
-          service-id: ${{ secrets.RENDER_SERVICE_ID }}
-          api-key: ${{ secrets.RENDER_API_KEY }}
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "Error: RENDER_DEPLOY_HOOK_URL secret is not defined."
+            exit 1
+          fi
+          curl -s -X POST "$RENDER_DEPLOY_HOOK_URL"

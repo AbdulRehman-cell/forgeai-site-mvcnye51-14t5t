@@ -1,54 +1,48 @@
-# Fast Render Deployment Guide
+# 🚀 5-Minute Render Deployment Guide
 
-Follow these simple steps to deploy **forgeai-site-mvcnye51** to Render in under 5 minutes.
+Follow these simple steps to deploy your Express + MongoDB application to Render.
 
 ---
 
 ### Step 1: Push Code to GitHub
 
-Make sure your changes are pushed to your remote GitHub repository:
+Ensure all files (including `render.yaml` and `Dockerfile`) are committed and pushed to your GitHub repository:
 
 ```bash
 git add .
-git commit -m "feat: configure render infrastructure"
+git commit -m "feat: setup production containerization & deployment"
 git push origin main
 ```
 
 ---
 
-### Step 2: Deploy to Render via Blueprint
+### Step 2: Connect Repository to Render Blueprint
 
-1. Go to [Render Dashboard](https://dashboard.render.com/) and log in.
-2. Click **New +** top right and select **Blueprint**.
-3. Connect your GitHub account and select your repository: `forgeai-site-mvcnye51`.
-4. Render will read `render.yaml` automatically and prompt you to create:
-   - Web Service (`forgeai-site-mvcnye51`)
-   - MongoDB Database (`forgeai-db`)
-5. Fill in the required environment variable:
-   - Set `CLIENT_ORIGIN` to your Render app URL (e.g., `https://forgeai-site-mvcnye51.onrender.com`).
-6. Click **Apply**.
+1. Go to your [Render Dashboard](https://dashboard.render.com/).
+2. Click **New +** in the top right corner and select **Blueprint**.
+3. Connect your GitHub account and select this repository (`forgeai-site-mvcnye51`).
+4. Render will parse `render.yaml` and auto-configure both the **Web Service** and **MongoDB Instance**.
+5. Click **Apply**.
 
 ---
 
-### Step 3: Add Continuous Deployment Secrets (Optional)
+### Step 3: Configure Environment Variables & Health Check Endpoint
 
-To enable automatic GitHub Actions triggers on every commit:
-
-1. In Render, go to **Account Settings** -> **API Keys** and create an API Key.
-2. Get your Service ID from your service's settings page or URL (`srv-xxxxxxxx`).
-3. In GitHub, go to **Repository Settings** -> **Secrets and variables** -> **Actions**.
-4. Add two secrets:
-   - `RENDER_API_KEY`: Your Render API Key
-   - `RENDER_SERVICE_ID`: Your Render Service ID
+1. Ensure your Express app exports a health endpoint in `server/index.js`:
+   ```javascript
+   app.get('/health', (req, res) => res.status(200).send('OK'));
+   ```
+2. In the Render Dashboard, open your newly created Web Service and go to **Environment**.
+3. Update `CLIENT_URL` with your actual deployment URL (e.g., `https://forgeai-site-mvcnye51.onrender.com`).
 
 ---
 
-### Local Test (Verification)
+### Step 4: Setup Automated CI/CD via GitHub Actions (Optional)
 
-To verify the Docker container works locally before pushing:
+1. Open your Web Service settings on Render, find **Deploy Hook**, and copy the URL.
+2. In your GitHub repository, navigate to **Settings > Secrets and variables > Actions**.
+3. Create a new secret:
+   - **Name:** `RENDER_DEPLOY_HOOK_URL`
+   - **Value:** Paste the deploy hook URL copied from Render.
 
-```bash
-docker compose up --build -d
-```
-
-Visit `http://localhost:10000/health` to confirm the container runs cleanly.
+Every commit pushed to `main` will now run checks and automatically trigger a clean production build!

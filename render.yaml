@@ -2,28 +2,25 @@ services:
   - type: web
     name: forgeai-site-mvcnye51
     env: docker
-    dockerfilePath: ./Dockerfile
-    plan: free
-    region: oregon
+    plan: starter
+    dockerfilePath: Dockerfile
     healthCheckPath: /health
     autoDeploy: true
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: PORT
         value: 10000
+      - key: NODE_ENV
+        value: production
       - key: MONGODB_URI
         fromDatabase:
-          name: forgeai-db
+          name: forgeai-mongo-db
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
-      - key: CLIENT_ORIGIN
+      - key: CLIENT_URL
         sync: false
 
 databases:
-  - name: forgeai-db
+  - name: forgeai-mongo-db
     databaseName: forgeai_db
-    user: forgeai_user
-    plan: free
-    region: oregon
+    plan: starter

@@ -12,8 +12,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm install --omit=dev
-COPY client/package*.json ./client/
-COPY --from=client-build /app/client/node_modules ./client/node_modules
 COPY server ./server
 COPY --from=client-build /app/client/dist ./client/dist
 EXPOSE 10000
